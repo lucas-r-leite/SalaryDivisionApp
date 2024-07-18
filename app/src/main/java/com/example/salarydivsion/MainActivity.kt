@@ -28,6 +28,8 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.salarydivsion.model.Division
+import com.example.salarydivsion.service.DivisionSetting
 import com.example.salarydivsion.ui.theme.SalaryDivsionTheme
 
 class MainActivity : ComponentActivity() {
@@ -47,11 +49,13 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun SalaryDivision() {
+    
+    val divisionSetting = remember { DivisionSetting() }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp),
+            .padding(top = 48.dp, start = 16.dp, end = 16.dp),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -79,16 +83,12 @@ fun SalaryDivision() {
         Spacer(modifier = Modifier.size(16.dp))
         Button(
             onClick = {
-                val salaryValue = salary.value.toDoubleOrNull() ?: 0.0
-                val investments = salaryValue * 0.2
-                val home = salaryValue * 0.1
-                val studies = salaryValue * 0.3
-
-                divisionResult.value = """
-                    |Investments: $investments
-                    |Home: $home
-                    |Studies: $studies
-                    """.trimMargin()
+                val salaryValue = salary.value.toDoubleOrNull()?:0.0
+                val amounts = divisionSetting.getDivisions().map { division ->
+                    val amount = salaryValue * division.percentage
+                    "${division.name}: ${"%.2f".format(amount)}"
+                }
+                divisionResult.value = amounts.joinToString(separator = "\n")
             }
         ) {
             Text(text = "Calculate")
@@ -96,9 +96,71 @@ fun SalaryDivision() {
 
         Spacer(modifier = Modifier.size(16.dp))
         Text(text = divisionResult.value)
+        //DivisionList(divisionSetting = divisionSetting)
 
     }
 }
+
+/*
+@Composable
+fun DivisionList(divisionSetting: DivisionSetting){
+    val divisions = divisionSetting.getDivisions()
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.Top,
+        horizontalAlignment = Alignment.Start
+    ){
+        divisions.forEach { division ->
+            Text(text = "${division.name}: ${division.percentage * 100}%",style = TextStyle(fontSize = 18.sp))
+        }
+    }
+}*/
+
+/*
+@Composable
+fun CreateDivision(divisionSettings: DivisionSetting) {
+    val name = remember { mutableStateOf("") }
+    val percentage = remember { mutableStateOf("") }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.Top,
+        horizontalAlignment = Alignment.Start
+    ) {
+        TextField(
+            value = name.value,
+            onValueChange = { newValue ->
+                name.value = newValue
+            },
+            label = { Text(text = "Enter division name") }
+        )
+
+        Spacer(modifier = Modifier.size(16.dp))
+        TextField(
+            value = percentage.value,
+            onValueChange = { newValue ->
+                percentage.value = newValue.replace(",",".")
+            },
+            label = { Text(text = "Enter division percentage") },
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+        )
+
+        Spacer(modifier = Modifier.size(16.dp))
+        Button(
+            onClick = {
+                val newDivision = Division(name = name.value, percentage = percentage.value.toDoubleOrNull()?: 0.0)
+                divisionSettings.addDivision(newDivision)
+            }
+        ) {
+            Text(text = "Create Division")
+        }
+    }
+}*/
 
 @Preview(showBackground = true)
 @Composable
