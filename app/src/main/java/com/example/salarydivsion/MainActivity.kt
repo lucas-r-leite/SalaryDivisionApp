@@ -17,6 +17,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -49,8 +50,10 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun SalaryDivision() {
-    
     val divisionSetting = remember { DivisionSetting() }
+    val salary = remember { mutableStateOf("") }
+    val divisionResult = remember { mutableStateOf("") }
+    val errorMessage = remember { mutableStateOf("") }
 
     Column(
         modifier = Modifier
@@ -59,7 +62,8 @@ fun SalaryDivision() {
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(text = "Salary Division",
+        Text(
+            text = "Salary Division",
             style = TextStyle(
                 color = Color.LightGray,
                 fontSize = 24.sp,
@@ -67,100 +71,63 @@ fun SalaryDivision() {
             )
         )
 
-        val salary = remember { mutableStateOf("") }
-        val divisionResult = remember { mutableStateOf("") }
-
         Spacer(modifier = Modifier.size(16.dp))
-        TextField(
-            value = salary.value,
-            onValueChange = { newValue ->
-                salary.value = newValue.replace(",",".")
-            },
-            label = { Text(text = "Enter your salary") },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
-        )
+        SalaryInput(salary, errorMessage)
 
         Spacer(modifier = Modifier.size(16.dp))
         Button(
             onClick = {
-                val salaryValue = salary.value.toDoubleOrNull()?:0.0
-                val amounts = divisionSetting.getDivisions().map { division ->
-                    val amount = salaryValue * division.percentage
-                    "${division.name}: ${"%.2f".format(amount)}"
+                val salaryValue = salary.value.toDoubleOrNull()
+                if (salaryValue == null || salaryValue <= 0) {
+                    errorMessage.value = "Please enter a valid salary."
+                    divisionResult.value = ""
+                } else {
+                    errorMessage.value = ""
+                    val amounts = divisionSetting.getDivisions().map { division ->
+                        val amount = salaryValue * division.percentage
+                        "${division.name}: ${"%.2f".format(amount)}"
+                    }
+                    divisionResult.value = amounts.joinToString(separator = "\n")
                 }
-                divisionResult.value = amounts.joinToString(separator = "\n")
             }
         ) {
             Text(text = "Calculate")
         }
 
         Spacer(modifier = Modifier.size(16.dp))
-        Text(text = divisionResult.value)
-        //DivisionList(divisionSetting = divisionSetting)
-
+        if (errorMessage.value.isNotEmpty()) {
+            Text(text = errorMessage.value, color = Color.Red)
+        } else {
+            DivisionResult(divisionResult)
+        }
     }
 }
 
-/*
 @Composable
-fun DivisionList(divisionSetting: DivisionSetting){
-    val divisions = divisionSetting.getDivisions()
+fun SalaryInput(salary: MutableState<String>, errorMessage: MutableState<String>) {
+    TextField(
+        value = salary.value,
+        onValueChange = { newValue ->
+            salary.value = newValue.replace(",", ".")
+            errorMessage.value = ""
+        },
+        label = { Text(text = "Enter your salary") },
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+        isError = errorMessage.value.isNotEmpty()
+    )
+}
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.Top,
-        horizontalAlignment = Alignment.Start
-    ){
-        divisions.forEach { division ->
-            Text(text = "${division.name}: ${division.percentage * 100}%",style = TextStyle(fontSize = 18.sp))
-        }
-    }
-}*/
-
-/*
 @Composable
-fun CreateDivision(divisionSettings: DivisionSetting) {
-    val name = remember { mutableStateOf("") }
-    val percentage = remember { mutableStateOf("") }
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.Top,
-        horizontalAlignment = Alignment.Start
-    ) {
-        TextField(
-            value = name.value,
-            onValueChange = { newValue ->
-                name.value = newValue
-            },
-            label = { Text(text = "Enter division name") }
+fun DivisionResult(divisionResult: MutableState<String>) {
+    Text(
+        text = divisionResult.value,
+        style = TextStyle(
+            color = Color.LightGray,
+            fontSize = 16.sp,
+            fontWeight = FontWeight.Normal
         )
-
-        Spacer(modifier = Modifier.size(16.dp))
-        TextField(
-            value = percentage.value,
-            onValueChange = { newValue ->
-                percentage.value = newValue.replace(",",".")
-            },
-            label = { Text(text = "Enter division percentage") },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
-        )
-
-        Spacer(modifier = Modifier.size(16.dp))
-        Button(
-            onClick = {
-                val newDivision = Division(name = name.value, percentage = percentage.value.toDoubleOrNull()?: 0.0)
-                divisionSettings.addDivision(newDivision)
-            }
-        ) {
-            Text(text = "Create Division")
-        }
-    }
-}*/
+    )
+}
 
 @Preview(showBackground = true)
 @Composable
