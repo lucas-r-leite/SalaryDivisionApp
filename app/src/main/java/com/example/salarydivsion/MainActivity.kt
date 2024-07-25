@@ -5,21 +5,10 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.Button
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -29,9 +18,10 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.salarydivsion.model.Division
-import com.example.salarydivsion.service.DivisionSetting
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.salarydivsion.ui.theme.SalaryDivsionTheme
+import com.example.salarydivsion.view.MainViewModel
+import com.example.salarydivsion.view.Screen
 
 class MainActivity : ComponentActivity() {
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -40,8 +30,14 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             SalaryDivsionTheme {
+                val viewModel: MainViewModel = viewModel()
+                val currentScreen by viewModel.currentScreen
+
                 Scaffold(modifier = Modifier.fillMaxSize()) {
-                    SalaryDivision()
+                    when (currentScreen) {
+                        Screen.Main -> SalaryDivision(viewModel)
+                        Screen.ManageDivisions -> ManageDivisionsScreen(viewModel)
+                    }
                 }
             }
         }
@@ -49,8 +45,8 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun SalaryDivision() {
-    val divisionSetting = remember { DivisionSetting() }
+fun SalaryDivision(viewModel: MainViewModel) {
+    val divisionSetting = remember { viewModel.divisionSetting }
     val salary = remember { mutableStateOf("") }
     val divisionResult = remember { mutableStateOf("") }
     val errorMessage = remember { mutableStateOf("") }
@@ -100,6 +96,11 @@ fun SalaryDivision() {
         } else {
             DivisionResult(divisionResult)
         }
+
+        Spacer(modifier = Modifier.size(16.dp))
+        Button(onClick = { viewModel.navigateTo(Screen.ManageDivisions) }) {
+            Text(text = "Manage Divisions")
+        }
     }
 }
 
@@ -133,6 +134,6 @@ fun DivisionResult(divisionResult: MutableState<String>) {
 @Composable
 fun SalaryDivisionPreview() {
     SalaryDivsionTheme {
-        SalaryDivision()
+        SalaryDivision(viewModel = MainViewModel())
     }
 }
