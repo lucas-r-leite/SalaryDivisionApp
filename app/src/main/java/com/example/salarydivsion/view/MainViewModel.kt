@@ -3,6 +3,7 @@ package com.example.salarydivsion.view
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
+import com.example.salarydivsion.model.Division
 import com.example.salarydivsion.service.DivisionSetting
 
 enum class Screen {
@@ -17,5 +18,21 @@ class MainViewModel : ViewModel() {
 
     fun navigateTo(screen: Screen) {
         currentScreen.value = screen
+    }
+
+    fun addDivision(division: Division) {
+        divisionSetting.addDivision(division)
+    }
+
+    fun removeDivision(division: Division) {
+        divisionSetting.removeDivision(division)
+    }
+
+    fun updateDivision(division: Division) {
+        divisionSetting.updateDivision(division)
+    }
+
+    fun getDivisions(): List<Division> {
+        return divisionSetting.getDivisions()
     }
 }

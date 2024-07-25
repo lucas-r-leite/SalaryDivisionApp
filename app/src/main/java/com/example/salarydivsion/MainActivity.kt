@@ -19,6 +19,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.salarydivsion.screen.ManageDivisionsScreen
 import com.example.salarydivsion.ui.theme.SalaryDivsionTheme
 import com.example.salarydivsion.view.MainViewModel
 import com.example.salarydivsion.view.Screen
@@ -97,7 +98,7 @@ fun SalaryDivision(viewModel: MainViewModel) {
             DivisionResult(divisionResult)
         }
 
-        Spacer(modifier = Modifier.size(16.dp))
+        Spacer(modifier = Modifier.size(size = 16.dp))
         Button(onClick = { viewModel.navigateTo(Screen.ManageDivisions) }) {
             Text(text = "Manage Divisions")
         }
